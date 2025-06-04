@@ -1,0 +1,51 @@
+name: Python CI + Docker Deploy to Render
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Build Docker image
+        run: docker build -t desafiodev:latest .
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+
+      - name: Build Docker image para testes
+        run: docker build -t desafiodev:test .
+
+      - name: Run tests
+        run: docker run --rm desafiodev:test python -m unittest discover
+
+  deploy:
+    needs: test
+
+    runs-on: ubuntu-latest
+    steps:
+
+      
+      - name: Operation
+        run: curl -X POST ${{secrets.OPERATION}}
